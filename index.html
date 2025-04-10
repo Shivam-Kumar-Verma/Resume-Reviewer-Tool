@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resume Reviewer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .file-upload {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .file-name {
+      font-weight: 500;
+      color: #444;
+    }
+
+    .upload-btn, .analyze-btn {
+      background-color: #6366f1;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .upload-btn:hover, .analyze-btn:hover {
+      background-color: #4f46e5;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+    }
+
+    .score {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    .keywords {
+      margin: 10px 0;
+      color: #444;
+    }
+
+    .keyword {
+      background-color: #e0f7fa;
+      color: #00796b;
+      padding: 4px 10px;
+      margin: 3px;
+      border-radius: 20px;
+      display: inline-block;
+      font-size: 13px;
+    }
+
+    pre {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-size: 14px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Resume Reviewer</h2>
+
+    <!-- Job Role Dropdown -->
+    <select id="jobRole">
+      <option value="">Select a job role (optional)</option>
+      <option value="data scientist">Data Scientist</option>
+      <option value="frontend developer">Frontend Developer</option>
+      <option value="backend developer">Backend Developer</option>
+      <option value="devops engineer">DevOps Engineer</option>
+    </select>
+
+    <!-- File Upload -->
+    <div class="file-upload">
+      <label class="upload-btn" for="resume">Choose File</label>
+      <input type="file" id="resume" accept=".pdf,.docx" onchange="showFileName()" />
+      <span class="file-name" id="fileName">No file chosen</span>
+    </div>
+
+    <button class="analyze-btn" onclick="uploadResume()">Analyze Resume</button>
+
+    <!-- Output Results -->
+    <div id="results">
+      <div class="score" id="score"></div>
+      <div class="keywords" id="keywords"></div>
+      <pre id="output"></pre>
+    </div>
+  </div>
+
+  <script>
+    function showFileName() {
+      const input = document.getElementById("resume");
+      const fileName = document.getElementById("fileName");
+      fileName.textContent = input.files[0] ? input.files[0].name : "No file chosen";
+    }
+
+    async function uploadResume() {
+      const fileInput = document.getElementById("resume");
+      const jobRole = document.getElementById("jobRole").value;
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please select a resume file.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("job_role", jobRole);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload-resume/", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        document.getElementById("score").innerHTML = `Score: <strong>${result.score || 0}%</strong>`;
+        
+        const keywordHTML = result.matched_keywords?.map(k => `<span class="keyword">${k}</span>`).join(" ") || "<em>No keywords matched</em>";
+        document.getElementById("keywords").innerHTML = `<strong>Matched Keywords:</strong><br>${keywordHTML}`;
+
+        document.getElementById("output").textContent = result.text || result.error || "No data.";
+      } catch (error) {
+        document.getElementById("output").textContent = "❌ Error: " + error;
+      }
+    }
+  </script>
+</body>
+</html>
+
