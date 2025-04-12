@@ -2,32 +2,115 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resume Reviewer</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #f4f4f9;
-      margin: 0;
-      padding: 40px;
-      display: flex;
-      justify-content: center;
+    /* Base Styles and Variables */
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-hover: #4338ca;
+      --secondary: #00796b;
+      --secondary-light: #e0f7fa;
+      --dark: #333;
+      --gray: #444;
+      --light-gray: #f9f9f9;
+      --light: #f4f4f9;
+      --white: #ffffff;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --shadow-hover: 0 6px 16px rgba(0, 0, 0, 0.15);
+      --border-radius: 12px;
+      --transition: all 0.3s ease;
     }
 
+    /* Global Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--light);
+      margin: 0;
+      padding: 2.5rem 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--dark);
+      line-height: 1.6;
+    }
+
+    /* Container Styles */
     .container {
       width: 100%;
       max-width: 700px;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      background: var(--white);
+      padding: 2.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      transition: var(--transition);
     }
 
+    .container:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Heading Styles */
     h2 {
       text-align: center;
-      margin-bottom: 30px;
-      color: #333;
+      margin-bottom: 2rem;
+      color: var(--dark);
+      font-weight: 600;
+      font-size: 1.75rem;
+      position: relative;
+      padding-bottom: 0.75rem;
     }
 
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background-color: var(--primary);
+      border-radius: 3px;
+    }
+
+    /* Form Controls */
+    select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      border: 1px solid #e0e0e0;
+      font-size: 0.95rem;
+      color: var(--gray);
+      background-color: var(--white);
+      cursor: pointer;
+      transition: var(--transition);
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1rem;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    select:hover {
+      border-color: var(--primary-light);
+    }
+
+    /* File Upload Styles */
     input[type="file"] {
       display: none;
     }
@@ -35,64 +118,172 @@
     .file-upload {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      transition: var(--transition);
     }
 
     .file-name {
       font-weight: 500;
-      color: #444;
+      color: var(--gray);
+      font-size: 0.95rem;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .upload-btn, .analyze-btn {
-      background-color: #6366f1;
-      color: white;
+      background-color: var(--primary-light);
+      color: var(--white);
       border: none;
-      padding: 12px 20px;
+      padding: 0.75rem 1.25rem;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+    }
+
+    .upload-btn::before {
+      content: "\1F4C1"; /* Unicode for folder icon */
+      font-size: 1.1rem;
+      margin-right: 0.3rem;
+    }
+
+    .analyze-btn::before {
+      content: "\1F50D"; /* Unicode for magnifying glass */
+      font-size: 1rem;
+      margin-right: 0.3rem;
     }
 
     .upload-btn:hover, .analyze-btn:hover {
-      background-color: #4f46e5;
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
     }
 
-    select {
+    .upload-btn:active, .analyze-btn:active {
+      transform: translateY(0);
+    }
+
+    .analyze-btn {
       width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Results Section */
+    #results {
+      opacity: 0;
+      transition: var(--transition);
+      border-top: 1px solid #eee;
+      padding-top: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    #results.active {
+      opacity: 1;
     }
 
     .score {
-      margin-top: 20px;
-      font-size: 18px;
+      margin-top: 1rem;
+      font-size: 1.25rem;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .score strong {
+      font-size: 1.5rem;
+      color: var(--primary);
+      font-weight: 600;
     }
 
     .keywords {
-      margin: 10px 0;
-      color: #444;
+      margin: 1.5rem 0;
+      color: var(--gray);
+    }
+
+    .keywords strong {
+      display: block;
+      margin-bottom: 0.75rem;
+      color: var(--dark);
     }
 
     .keyword {
-      background-color: #e0f7fa;
-      color: #00796b;
-      padding: 4px 10px;
-      margin: 3px;
+      background-color: var(--secondary-light);
+      color: var(--secondary);
+      padding: 0.4rem 0.8rem;
+      margin: 0.25rem;
       border-radius: 20px;
       display: inline-block;
-      font-size: 13px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: var(--transition);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .keyword:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
 
     pre {
-      background: #f9f9f9;
-      padding: 20px;
+      background: var(--light-gray);
+      padding: 1.5rem;
       border-radius: 8px;
       white-space: pre-wrap;
-      font-size: 14px;
-      margin-top: 20px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--gray);
+      margin-top: 1.5rem;
+      overflow: auto;
+      max-height: 300px;
+      border: 1px solid #e0e0e0;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .container {
+        padding: 1.5rem;
+      }
+
+      .file-upload {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .file-name {
+        margin-top: 0.5rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fadeIn {
+      animation: fadeIn 0.5s ease-out forwards;
     }
   </style>
 </head>
@@ -107,6 +298,11 @@
       <option value="frontend developer">Frontend Developer</option>
       <option value="backend developer">Backend Developer</option>
       <option value="devops engineer">DevOps Engineer</option>
+      <option value="ui-ux designer">UI-UX Designer</option>
+      <option value="data analyst">Data Analyst</option>
+      <option value="cloud architect">Cloud Architect</option>
+      <option value="machine learning engineer">Machine Learning Engineer</option>
+      <option value="electronics engineer">Electronics Engineer</option>
     </select>
 
     <!-- File Upload -->
@@ -161,8 +357,14 @@
         document.getElementById("keywords").innerHTML = `<strong>Matched Keywords:</strong><br>${keywordHTML}`;
 
         document.getElementById("output").textContent = result.text || result.error || "No data.";
+        
+        // Add animation and show results
+        const results = document.getElementById("results");
+        results.classList.add("active");
       } catch (error) {
         document.getElementById("output").textContent = "❌ Error: " + error;
+        // Show results section even on error
+        document.getElementById("results").classList.add("active");
       }
     }
   </script>
