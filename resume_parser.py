@@ -1,6 +1,9 @@
 from io import BytesIO
 import fitz  # PyMuPDF
 from docx import Document
+import re
+
+# Normalized keyword dictionary (all lowercase, no special formatting issues)
 job_keywords = {
     "data scientist": [
         "python", "machine learning", "pandas", "data visualization", "sql", "tensorflow", "statistics"
@@ -13,6 +16,27 @@ job_keywords = {
     ],
     "devops engineer": [
         "aws", "docker", "kubernetes", "ci/cd", "linux", "terraform", "monitoring"
+    ],
+    "ui-ux designer": [
+        "figma", "adobe xd", "sketch", "invision", "adobe photoshop", "illustrator", "html", "css",
+        "webflow", "framer", "design systems", "typography", "responsive design", "color theory"
+    ],
+    "data analyst": [
+        "excel", "sql", "r", "python", "pandas", "numpy", "tableau", "oracle", "mongodb", "hadoop",
+        "talend", "alteryx", "apache nifi", "spark"
+    ],
+    "cloud architect": [
+        "aws", "microsoft azure", "google cloud platform", "docker", "linux", "terraform", "monitoring", "kubernetes"
+    ],
+    "machine learning engineer": [
+        "python", "r", "java", "ci/cd", "c++", "pandas", "numpy", "pytorch", "tensorflow", "docker",
+        "fastapi", "kubernetes", "airflow", "terraform", "luigi"
+    ],
+    "electronics engineer": [
+        "circuit design", "pcb design", "microcontrollers", "embedded systems", "iot", "rf", 
+        "wireless communication", "power electronics", "signal processing", "matlab", "simulink",
+        "vhdl", "verilog", "python", "c", "c++", "labview", "ltspice", "pspice", 
+        "autocad electrical", "proteus"
     ]
 }
 
@@ -31,12 +55,28 @@ def extract_text_from_docx(file):
         for para in doc.paragraphs:
             text += para.text + "\n"
     return text
+
+def clean_and_tokenize(text):
+    # Remove special characters and tokenize
+    text = text.lower()
+    text = re.sub(r'[^a-z0-9\s]', ' ', text)
+    tokens = set(text.split())
+    return tokens
+
 def score_resume(text, job_role=None):
-    text_lower = text.lower()
+    tokens = clean_and_tokenize(text)
 
-    keywords = job_keywords.get(job_role.lower(), []) if job_role else []
+    if not job_role:
+        return {
+            "score": 0,
+            "matched_keywords": [],
+            "total_keywords": []
+        }
 
-    matched = [kw for kw in keywords if kw in text_lower]
+    role = job_role.strip().lower()
+    keywords = job_keywords.get(role, [])
+
+    matched = [kw for kw in keywords if all(word in tokens for word in kw.split())]
 
     score = len(matched) / len(keywords) * 100 if keywords else 0
 
@@ -45,5 +85,4 @@ def score_resume(text, job_role=None):
         "matched_keywords": matched,
         "total_keywords": keywords
     }
-
 
