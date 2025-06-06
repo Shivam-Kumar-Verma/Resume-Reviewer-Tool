@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Reviewer</title>
+  <style>
+    :root {
+      --bg-color: #f9f9f9;
+      --primary-color: #4caf50;
+      --accent-color: #007BFF;
+      --text-color: #333;
+      --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      width: 95%;
+      max-width: 600px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    select, input[type="file"], .upload-btn, .analyze-btn {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .upload-btn {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .upload-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .file-name {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .analyze-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .analyze-btn:hover {
+      background-color: #3e8e41;
+    }
+
+    .analyze-btn.loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    #results {
+      display: none;
+      margin-top: 2rem;
+    }
+
+    #results.active {
+      display: block;
+    }
+
+    .score {
+      font-size: 1.2rem;
+      margin-bottom: 0.75rem;
+      font-weight: bold;
+    }
+
+    .keywords {
+      margin-bottom: 1rem;
+    }
+
+    .keyword {
+      background-color: #e0f7fa;
+      padding: 0.3rem 0.6rem;
+      margin: 0.2rem;
+      display: inline-block;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+
+    pre {
+      background: #f0f0f0;
+      padding: 1rem;
+      overflow-x: auto;
+      border-radius: 6px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #323232;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .toast.hide {
+      animation: fadeOut 0.3s ease-in-out forwards;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Resume Reviewer</h2>
+
+    <label for="jobRole">Choose a job role (optional)</label>
+    <select id="jobRole" aria-label="Select job role">
+      <option value="">-- Select a job role --</option>
+      <option value="data scientist">Data Scientist</option>
+      <option value="frontend developer">Frontend Developer</option>
+      <option value="backend developer">Backend Developer</option>
+      <option value="devops engineer">DevOps Engineer</option>
+      <option value="ui-ux designer">UI-UX Designer</option>
+      <option value="data analyst">Data Analyst</option>
+      <option value="cloud architect">Cloud Architect</option>
+      <option value="machine learning engineer">Machine Learning Engineer</option>
+      <option value="electronics engineer">Electronics Engineer</option>
+    </select>
+
+    <label for="resume">Upload Resume (.pdf or .docx)</label>
+    <label class="upload-btn" for="resume">Choose File</label>
+    <input type="file" id="resume" accept=".pdf,.docx" onchange="showFileName()" hidden />
+    <span class="file-name" id="fileName">No file chosen</span>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="uploadResume()">Analyze Resume</button>
+
+    <div id="results">
+      <div class="score" id="score"></div>
+      <div class="keywords" id="keywords"></div>
+      <pre id="output"></pre>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" style="display: none;"></div>
+
+  <script>
+    function showFileName() {
+      const input = document.getElementById("resume");
+      const fileName = document.getElementById("fileName");
+      fileName.textContent = input.files[0] ? input.files[0].name : "No file chosen";
+    }
+
+    function showToast(message, duration = 3000) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.remove("hide");
+      toast.style.display = "block";
+
+      setTimeout(() => {
+        toast.classList.add("hide");
+        setTimeout(() => {
+          toast.style.display = "none";
+        }, 300);
+      }, duration);
+    }
+
+    async function uploadResume() {
+      const fileInput = document.getElementById("resume");
+      const analyzeBtn = document.getElementById("analyzeBtn");
+      const jobRole = document.getElementById("jobRole").value;
+      const file = fileInput.files[0];
+
+      if (!file) {
+        showToast("⚠️ Please select a resume file.");
+        return;
+      }
+
+      const validTypes = [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ];
+
+      if (!validTypes.includes(file.type)) {
+        showToast("❌ Only PDF or DOCX files are allowed.");
+        return;
+      }
+
+      analyzeBtn.textContent = "Analyzing...";
+      analyzeBtn.classList.add("loading");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("job_role", jobRole);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload-resume/", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+
+        const result = await response.json();
+
+        document.getElementById("score").innerHTML = `Score: <strong>${result.score || 0}%</strong>`;
+
+        const keywordHTML = result.matched_keywords?.map(k =>
+          `<span class="keyword">${k}</span>`
+        ).join(" ") || "<em>No keywords matched</em>";
+
+        document.getElementById("keywords").innerHTML = `<strong>Matched Keywords:</strong><br>${keywordHTML}`;
+        document.getElementById("output").textContent = result.text || result.error || "No data.";
+        document.getElementById("results").classList.add("active");
+
+        showToast("✅ Resume analyzed successfully!");
+      } catch (error) {
+        document.getElementById("output").textContent = "❌ Error: " + error.message;
+        document.getElementById("results").classList.add("active");
+        showToast("❌ Failed to analyze resume.");
+      } finally {
+        analyzeBtn.textContent = "Analyze Resume";
+        analyzeBtn.classList.remove("loading");
+      }
+    }
+  </script>
+</body>
+</html>
