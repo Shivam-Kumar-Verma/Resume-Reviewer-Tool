@@ -2,4 +2,4 @@ fastapi
 uvicorn
 python-docx
 python-multipart
-PyMuPDFgit 
+PyMuPDF
