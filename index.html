@@ -3,179 +3,519 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resume Reviewer</title>
+  <title>Resume Reviewer Pro</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     :root {
-      --bg-color: #f9f9f9;
+      /* Light Theme */
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --container-bg: rgba(255, 255, 255, 0.95);
       --primary-color: #4caf50;
       --accent-color: #007BFF;
       --text-color: #333;
-      --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      --text-secondary: #666;
+      --border-color: #e0e0e0;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.15);
+      --keyword-bg: #e8f5e8;
+      --pre-bg: #f8f9fa;
+      --toggle-bg: #ccc;
+      --toggle-thumb: #fff;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Theme */
+      --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      --container-bg: rgba(30, 30, 30, 0.95);
+      --primary-color: #66bb6a;
+      --accent-color: #42a5f5;
+      --text-color: #e0e0e0;
+      --text-secondary: #b0b0b0;
+      --border-color: #404040;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.4);
+      --keyword-bg: #2d4a2d;
+      --pre-bg: #2a2a2a;
+      --toggle-bg: #4a4a4a;
+      --toggle-thumb: #fff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-color);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg-gradient);
       color: var(--text-color);
-      margin: 0;
-      padding: 0;
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      padding: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated Background Elements */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+      z-index: -1;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(1deg); }
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--container-bg);
+      border-radius: 50px;
+      padding: 10px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 60px;
+      height: 30px;
+      background: var(--toggle-bg);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      outline: none;
+    }
+
+    .toggle-switch::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      background: var(--toggle-thumb);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-switch.active {
+      background: var(--primary-color);
+    }
+
+    .toggle-switch.active::before {
+      transform: translateX(30px);
+    }
+
+    .toggle-icon {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--text-color);
+    }
+
+    .sun-icon {
+      left: 8px;
+    }
+
+    .moon-icon {
+      right: 8px;
     }
 
     .container {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
+      background: var(--container-bg);
+      padding: 3rem;
+      border-radius: 20px;
       box-shadow: var(--shadow);
-      width: 95%;
-      max-width: 600px;
+      width: 100%;
+      max-width: 700px;
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+      animation: slideUp 0.6s ease-out;
     }
 
-    h2 {
+    .container:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-5px);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
       text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h2 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .form-group {
       margin-bottom: 1.5rem;
     }
 
     label {
       display: block;
-      margin-top: 1rem;
       margin-bottom: 0.5rem;
-      font-weight: bold;
-    }
-
-    select, input[type="file"], .upload-btn, .analyze-btn {
-      width: 100%;
-      padding: 0.6rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      font-weight: 600;
+      color: var(--text-color);
       font-size: 1rem;
     }
 
+    select, .upload-btn, .analyze-btn {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      background: var(--container-bg);
+      color: var(--text-color);
+    }
+
+    select:focus, .upload-btn:focus, .analyze-btn:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .upload-section {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
     .upload-btn {
-      background-color: var(--accent-color);
-      color: #fff;
+      background: linear-gradient(135deg, var(--accent-color), #0056b3);
+      color: white;
       border: none;
       cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
     }
 
     .upload-btn:hover {
-      background-color: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
     }
 
     .file-name {
       font-size: 0.9rem;
-      color: #555;
-      margin-top: -0.5rem;
-      margin-bottom: 1rem;
+      color: var(--text-secondary);
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: var(--pre-bg);
+      border-radius: 8px;
+      border-left: 4px solid var(--accent-color);
     }
 
     .analyze-btn {
-      background-color: var(--primary-color);
+      background: linear-gradient(135deg, var(--primary-color), #2e7d32);
       color: white;
       border: none;
       cursor: pointer;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
     }
 
     .analyze-btn:hover {
-      background-color: #3e8e41;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
     }
 
     .analyze-btn.loading {
-      opacity: 0.6;
+      opacity: 0.7;
       pointer-events: none;
+    }
+
+    .analyze-btn.loading::after {
+      content: '';
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     #results {
       display: none;
       margin-top: 2rem;
+      padding: 2rem;
+      background: var(--pre-bg);
+      border-radius: 15px;
+      border: 1px solid var(--border-color);
+      animation: fadeIn 0.5s ease-out;
     }
 
     #results.active {
       display: block;
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .score {
-      font-size: 1.2rem;
-      margin-bottom: 0.75rem;
-      font-weight: bold;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      color: white;
+      border-radius: 10px;
     }
 
     .keywords {
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .keywords strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
     }
 
     .keyword {
-      background-color: #e0f7fa;
-      padding: 0.3rem 0.6rem;
-      margin: 0.2rem;
+      background: var(--keyword-bg);
+      color: var(--text-color);
+      padding: 0.4rem 0.8rem;
+      margin: 0.3rem;
       display: inline-block;
-      border-radius: 5px;
+      border-radius: 20px;
       font-size: 0.9rem;
+      font-weight: 500;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .keyword:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
     }
 
     pre {
-      background: #f0f0f0;
-      padding: 1rem;
+      background: var(--pre-bg);
+      padding: 1.5rem;
       overflow-x: auto;
-      border-radius: 6px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: var(--text-color);
     }
 
     /* Toast Notification */
     .toast {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #323232;
-      color: #fff;
-      padding: 12px 18px;
-      border-radius: 8px;
+      bottom: 30px;
+      right: 30px;
+      background: var(--container-bg);
+      color: var(--text-color);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
       box-shadow: var(--shadow);
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       z-index: 1000;
-      animation: fadeIn 0.3s ease-in-out;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+      animation: slideInRight 0.3s ease-out;
+      max-width: 300px;
     }
 
     .toast.hide {
-      animation: fadeOut 0.3s ease-in-out forwards;
+      animation: slideOutRight 0.3s ease-out forwards;
     }
 
-    @keyframes fadeOut {
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
       to {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateX(100%);
+      }
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 2rem;
+      text-align: center;
+      padding: 1rem;
+      background: var(--container-bg);
+      border-radius: 15px;
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow);
+    }
+
+    .footer p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .footer .love {
+      color: #e91e63;
+      font-size: 1.2rem;
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    .footer .author {
+      font-weight: 600;
+      background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 2rem;
+        margin: 10px;
+      }
+      
+      .header h2 {
+        font-size: 2rem;
+      }
+      
+      .theme-toggle {
+        top: 10px;
+        right: 10px;
+      }
+    }
+
+    /* Accessibility */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Theme Toggle -->
+  <div class="theme-toggle">
+    <button class="toggle-switch" id="themeToggle" aria-label="Toggle dark mode">
+      <i class="fas fa-sun toggle-icon sun-icon"></i>
+      <i class="fas fa-moon toggle-icon moon-icon"></i>
+    </button>
+  </div>
+
   <div class="container">
-    <h2>Resume Reviewer</h2>
+    <div class="header">
+      <h2><i class="fas fa-file-alt"></i> Resume Reviewer Pro</h2>
+      <p>Analyze your resume with AI-powered insights</p>
+    </div>
 
-    <label for="jobRole">Choose a job role (optional)</label>
-    <select id="jobRole" aria-label="Select job role">
-      <option value="">-- Select a job role --</option>
-      <option value="data scientist">Data Scientist</option>
-      <option value="frontend developer">Frontend Developer</option>
-      <option value="backend developer">Backend Developer</option>
-      <option value="devops engineer">DevOps Engineer</option>
-      <option value="ui-ux designer">UI-UX Designer</option>
-      <option value="data analyst">Data Analyst</option>
-      <option value="cloud architect">Cloud Architect</option>
-      <option value="machine learning engineer">Machine Learning Engineer</option>
-      <option value="electronics engineer">Electronics Engineer</option>
-    </select>
+    <div class="form-group">
+      <label for="jobRole"><i class="fas fa-briefcase"></i> Choose a job role (optional)</label>
+      <select id="jobRole" aria-label="Select job role">
+        <option value="">-- Select a job role --</option>
+        <option value="data scientist">Data Scientist</option>
+        <option value="frontend developer">Frontend Developer</option>
+        <option value="backend developer">Backend Developer</option>
+        <option value="devops engineer">DevOps Engineer</option>
+        <option value="ui-ux designer">UI-UX Designer</option>
+        <option value="data analyst">Data Analyst</option>
+        <option value="cloud architect">Cloud Architect</option>
+        <option value="machine learning engineer">Machine Learning Engineer</option>
+        <option value="electronics engineer">Electronics Engineer</option>
+      </select>
+    </div>
 
-    <label for="resume">Upload Resume (.pdf or .docx)</label>
-    <label class="upload-btn" for="resume">Choose File</label>
-    <input type="file" id="resume" accept=".pdf,.docx" onchange="showFileName()" hidden />
-    <span class="file-name" id="fileName">No file chosen</span>
+    <div class="form-group">
+      <label for="resume"><i class="fas fa-upload"></i> Upload Resume (.pdf or .docx)</label>
+      <label class="upload-btn" for="resume">
+        <i class="fas fa-cloud-upload-alt"></i>
+        Choose File
+      </label>
+      <input type="file" id="resume" accept=".pdf,.docx" onchange="showFileName()" hidden />
+      <div class="file-name" id="fileName">
+        <i class="fas fa-info-circle"></i> No file chosen
+      </div>
+    </div>
 
-    <button class="analyze-btn" id="analyzeBtn" onclick="uploadResume()">Analyze Resume</button>
+    <button class="analyze-btn" id="analyzeBtn" onclick="uploadResume()">
+      <i class="fas fa-search"></i>
+      Analyze Resume
+    </button>
 
     <div id="results">
       <div class="score" id="score"></div>
@@ -184,19 +524,54 @@
     </div>
   </div>
 
+  <!-- Footer -->
+  <div class="footer">
+    <p>Made with <span class="love">♥</span> by <span class="author">Shivam Kumar Verma</span></p>
+    <p><i class="fas fa-code"></i> Crafted for excellence</p>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toast" class="toast" style="display: none;"></div>
 
   <script>
+    // Theme Toggle Functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    // Check for saved theme preference or default to light mode
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    body.setAttribute('data-theme', currentTheme);
+    
+    if (currentTheme === 'dark') {
+      themeToggle.classList.add('active');
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      
+      themeToggle.classList.toggle('active');
+      
+      // Show theme change notification
+      showToast(`🌙 Switched to ${newTheme} mode`, 2000);
+    });
+
     function showFileName() {
       const input = document.getElementById("resume");
       const fileName = document.getElementById("fileName");
-      fileName.textContent = input.files[0] ? input.files[0].name : "No file chosen";
+      if (input.files[0]) {
+        fileName.innerHTML = `<i class="fas fa-file-alt"></i> ${input.files[0].name}`;
+      } else {
+        fileName.innerHTML = `<i class="fas fa-info-circle"></i> No file chosen`;
+      }
     }
 
     function showToast(message, duration = 3000) {
       const toast = document.getElementById("toast");
-      toast.textContent = message;
+      toast.innerHTML = message;
       toast.classList.remove("hide");
       toast.style.display = "block";
 
@@ -229,7 +604,7 @@
         return;
       }
 
-      analyzeBtn.textContent = "Analyzing...";
+      analyzeBtn.innerHTML = '<i class="fas fa-spinner"></i> Analyzing...';
       analyzeBtn.classList.add("loading");
 
       const formData = new FormData();
@@ -246,13 +621,13 @@
 
         const result = await response.json();
 
-        document.getElementById("score").innerHTML = `Score: <strong>${result.score || 0}%</strong>`;
+        document.getElementById("score").innerHTML = `<i class="fas fa-chart-line"></i> Score: <strong>${result.score || 0}%</strong>`;
 
         const keywordHTML = result.matched_keywords?.map(k =>
-          `<span class="keyword">${k}</span>`
+          `<span class="keyword"><i class="fas fa-tag"></i> ${k}</span>`
         ).join(" ") || "<em>No keywords matched</em>";
 
-        document.getElementById("keywords").innerHTML = `<strong>Matched Keywords:</strong><br>${keywordHTML}`;
+        document.getElementById("keywords").innerHTML = `<strong><i class="fas fa-key"></i> Matched Keywords:</strong><br>${keywordHTML}`;
         document.getElementById("output").textContent = result.text || result.error || "No data.";
         document.getElementById("results").classList.add("active");
 
@@ -262,10 +637,24 @@
         document.getElementById("results").classList.add("active");
         showToast("❌ Failed to analyze resume.");
       } finally {
-        analyzeBtn.textContent = "Analyze Resume";
+        analyzeBtn.innerHTML = '<i class="fas fa-search"></i> Analyze Resume';
         analyzeBtn.classList.remove("loading");
       }
     }
+
+    // Add some interactive effects
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add hover effects to form elements
+      const formElements = document.querySelectorAll('select, .upload-btn, .analyze-btn');
+      formElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateY(-2px)';
+        });
+        element.addEventListener('mouseleave', function() {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+    });
   </script>
 </body>
 </html>
