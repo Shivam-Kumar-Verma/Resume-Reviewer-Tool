@@ -1,13 +1,17 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from utils.resume_parser import extract_text_from_pdf, extract_text_from_docx, score_resume
+import os
 
 app = FastAPI()
+
+# Get frontend URL from environment variable (default to "*")
+frontend_url = os.getenv("FRONTEND_URL", "*")
 
 # Enable frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development; limit in production
+    allow_origins=[frontend_url] if frontend_url != "*" else ["*"],  # Change "*" to your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
